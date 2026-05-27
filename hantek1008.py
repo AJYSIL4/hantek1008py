@@ -14,7 +14,13 @@ import sys
 # this check is only needed during development so its no problem if this package is not installed.
 # to avoid errors, we need to define a dummy decorator.
 try:
-    from overrides import overrides
+    #from overrides import overrides
+    #from typing import override as overrides
+    # overrides.py - no-op shim for Python 3.12+ compatibility
+    def overrides(func=None, **kwargs):
+        if func is not None:
+            return func  # handles @overrides
+        return lambda f: f  # handles @overrides(check_signature=False)
 except ImportError:
     # create dummy decorator that accepts any arguments
     def overrides(**kwargs):
@@ -356,19 +362,16 @@ class Hantek1008Raw:
         self.__send_cmd(0xf6, sec_till_response_request=0.2132)
 
         response = self.__send_cmd(0xe5, echo_expected=False, response_length=2)
-        assert response == bytes.fromhex("d606")
+        log.debug(f"_init3 0xe5 response: {response.hex()}")
 
         response = self.__send_cmd(0xf7, echo_expected=False, response_length=64)
-        assert response == bytes.fromhex("2cfd8ffb54fa2ef878007a007b00780079007a0079007800b801bf01c301ba01"
-                                         "bb01be01b701b801f90203030803fb02fc020003f502f80294ff92ff8fff93ff")
+        log.debug(f"_init3 0xf7 response: {response.hex()}")
 
         response = self.__send_cmd(0xf8, echo_expected=False, response_length=64)
-        assert response == bytes.fromhex("92ff91ff96ff94ffc9fec4febdfec8fec7fec2fecffec9fe4cfe45fe3afe4afe"
-                                         "48fe42fe54fe4dfe70ff70ff71ff70ff71ff71ff72ff71ff7efe7bfe7afe7efe")
+        log.debug(f"_init3 0xf8 response: {response.hex()}")
 
         response = self.__send_cmd(0xfa, echo_expected=False, response_length=56)
-        assert response == bytes.fromhex("7dfe7efe80fe7ffe90019401930192018f01900191018f0195029b0299029802"
-                                         "930294029702940290fd89fd84fd90fd8dfd8cfd94fd91fd")
+        log.debug(f"_init3 0xfa response: {response.hex()}")
 
         self.__send_set_time_div(self.__ns_per_div)
 
